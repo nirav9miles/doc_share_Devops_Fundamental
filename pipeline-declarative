@@ -1,0 +1,30 @@
+pipeline {
+    agent { label 'master'}
+    stages {
+        stage ('scm_checkout') 
+          {
+            steps {
+              checkout([$class: 'GitSCM', 
+                branches: [[name: '*/master']], 
+                extensions: [], 
+                userRemoteConfigs: [[url: 'https://github.com/ganeshhp/helloworldweb.git']]])        
+            }
+        }
+        stage ('build')
+         {
+            steps {
+                sh 'mvn clean install'
+                input 'Proceed with Archival'
+            }
+        }
+        
+        stage ('archive')
+         {
+            steps {
+                archiveArtifacts artifacts: 'target/Helloworldwebapp-dev.war', 
+                    followSymlinks: false
+            }
+        }
+        
+    }
+ }
