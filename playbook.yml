@@ -1,0 +1,47 @@
+---
+
+- name: manage webserver
+  hosts: appserver
+  connection: local
+  become: true
+  gather_facts: true
+  vars:
+    package_name: httpd
+    service_name: httpd
+
+  handlers:
+  - name: restart_webservice
+    service:
+       name: "{{ service_name }}"
+       state: restarted
+
+  tasks:
+  - name: install webserver
+    when: ansible_facts['os_family'] == "Debian"
+    package:
+       name: "{{ package_name }}"
+       state: present
+
+  - name: manage service
+    service:
+       name: "{{ service_name }}"
+       state: started
+
+  - name: deploy site
+    copy:
+       src: index.html
+       dest: /var/www/html/
+    notify:
+       restart_webservice
+
+- name: manage user
+  hosts: jenkins
+  remote_user: centos
+  become: true
+  gather_facts: false
+  tasks:
+  - name: manage users
+    user:
+       name: "{{ user_name }}"
+       state: present
+
